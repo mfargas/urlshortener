@@ -40,16 +40,17 @@ app.post('/api/shorturl/', jsonParser, (req, res) => {
     if(err) console.log(err);
     console.log('Success :)', newUrl);
     res.json(newUrl);
-  })
+  });
 });
 
 app.get('/api/shorturl/:trailing_id', (req, res) => {
-  let trailingID = req.params.trailing_id;
-  console.log(trailingID);
-  res.json({
-    'id': trailingID
-  })
-})
+  let generatedID = req.params.trailing_id;
+  Url.find({trailing_id: generatedID}).then((foundURL)=>{
+    let urlForRedir = foundURL[0];
+    console.log(urlForRedir);
+    res.redirect(urlForRedir.original_url)
+  });
+});
 
 app.listen(port, () => {
   console.log(`Listening on port ${port}`);
