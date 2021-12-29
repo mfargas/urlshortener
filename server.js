@@ -27,15 +27,17 @@ app.use('/public', express.static(`${process.cwd()}/public`));
 app.get('/', (req, res) => { res.sendFile(process.cwd() + '/views/index.html') });
 
 app.post('/api/shorturl/', jsonParser, (req, res) => {
+  const urlRegEx = new RegExp(/(?<=(http|https):\/\/)[^\/]+/);
   let originalUrl = req.body.url;
   let trailingID = shortid.generate();
   let shortUrl = '/api/shorturl/' + trailingID;
-  if (validUrl.isUri(originalUrl)){
+  if (originalUrl.match(urlRegEx)){
     let newUrl = new Url({
       original_url: originalUrl,
       short_url: shortUrl,
       trailing_id: trailingID
     });
+    console.log(newUrl);
     newUrl.save((err, doc) => {
       if (err) console.log(err);
       res.json(newUrl);
@@ -45,8 +47,9 @@ app.post('/api/shorturl/', jsonParser, (req, res) => {
   }
 });
 
-app.get('/api/shorturl/:trailing_id', (req, res) => {
+app.get('/api/shorturl/:trailing_id',  (req, res) => {
   let generatedID = req.params.trailing_id;
+  
   Url.find({trailing_id: generatedID}).then((foundURL)=>{
     let urlForRedir = foundURL[0];
     console.log(urlForRedir);
