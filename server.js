@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const shortid = require('shortid');
+var validUrl = require('valid-url');
 const app = express();
 
 // Basic Configuration
@@ -26,21 +27,23 @@ app.use('/public', express.static(`${process.cwd()}/public`));
 app.get('/', (req, res) => { res.sendFile(process.cwd() + '/views/index.html') });
 
 app.post('/api/shorturl/', jsonParser, (req, res) => {
-  let trailingID = shortid.generate();
-  let originalUrl = req.body['url'];
-  let shortUrl = __dirname + '/api/shorturl/' + trailingID;
-  let newUrl = new Url({
-    original_url: originalUrl,
-    short_url: shortUrl,
-    trailing_id: trailingID
-  });
+  if (validUrl.isUri(req.body['url'])){
+    let originalUrl = req.body['url'];
+    let trailingID = shortid.generate();
+    let shortUrl = __dirname + '/api/shorturl/' + trailingID;
+    let newUrl = new Url({
+      original_url: originalUrl,
+      short_url: shortUrl,
+      trailing_id: trailingID
+    });
 
-  console.log(newUrl);
-  newUrl.save((err, doc) => {
-    if(err) console.log(err);
-    console.log('Success :)', newUrl);
-    res.json(newUrl);
-  });
+    newUrl.save((err, doc) => {
+      if (err) console.log(err);
+      res.json(newUrl);
+    });
+  } else {
+    res.json({ error: 'invalid url' });
+  }
 });
 
 app.get('/api/shorturl/:trailing_id', (req, res) => {
@@ -48,7 +51,7 @@ app.get('/api/shorturl/:trailing_id', (req, res) => {
   Url.find({trailing_id: generatedID}).then((foundURL)=>{
     let urlForRedir = foundURL[0];
     console.log(urlForRedir);
-    res.redirect(urlForRedir.original_url)
+    res.redirect(urlForRedir.original_url);
   });
 });
 
@@ -57,8 +60,6 @@ app.listen(port, () => {
 });
 
 // TEST CASES TO PASS
-
-// When you visit / api / shorturl / <short_url>, you will be redirected to the original URL.
 
 //   If you pass an invalid URL that doesn't follow the valid http://www.example.com format, the JSON response will contain 
 //   {error: 'invalid url' }
