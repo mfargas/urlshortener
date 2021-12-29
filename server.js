@@ -4,7 +4,7 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const shortid = require('shortid');
-var validUrl = require('valid-url');
+const validUrl = require('valid-url');
 const app = express();
 
 // Basic Configuration
@@ -27,22 +27,21 @@ app.use('/public', express.static(`${process.cwd()}/public`));
 app.get('/', (req, res) => { res.sendFile(process.cwd() + '/views/index.html') });
 
 app.post('/api/shorturl/', jsonParser, (req, res) => {
-  if (validUrl.isUri(req.body['url'])){
-    let originalUrl = req.body['url'];
-    let trailingID = shortid.generate();
-    let shortUrl = __dirname + '/api/shorturl/' + trailingID;
+  let originalUrl = req.body.url;
+  let trailingID = shortid.generate();
+  let shortUrl = '/api/shorturl/' + trailingID;
+  if (validUrl.isUri(originalUrl)){
     let newUrl = new Url({
       original_url: originalUrl,
       short_url: shortUrl,
       trailing_id: trailingID
     });
-
     newUrl.save((err, doc) => {
       if (err) console.log(err);
       res.json(newUrl);
     });
   } else {
-    res.json({ error: 'invalid url' });
+    res.status(400).json({ error: 'invalid url' });
   }
 });
 
