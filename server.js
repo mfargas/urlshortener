@@ -33,7 +33,7 @@ app.get('/', (req, res) => { res.sendFile(process.cwd() + '/views/index.html') }
 app.post('/api/shorturl/', jsonParser, (req, res) => {
   let originalUrl = req.body.url;
   let trailingID = shortid.generate();
-  let shortUrl = 'https://api/shorturl/' + trailingID;
+  let shortUrl = trailingID;
 
   dns.lookup(urlparser.parse(originalUrl).hostname, (error, address)=>{
     console.log(address);
