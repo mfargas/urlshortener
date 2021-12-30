@@ -23,8 +23,8 @@ let Url = mongoose.model('Url', schema);
 
 app.use(cors());
 
-app.use(express.urlencoded({ extended: true }));
-// app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({ extended: true }));
+// app.use(bodyParser.urlencoded({ extended: false }));    deprecated
 
 app.use('/public', express.static(`${process.cwd()}/public`));
 
@@ -33,9 +33,10 @@ app.get('/', (req, res) => { res.sendFile(process.cwd() + '/views/index.html') }
 app.post('/api/shorturl/', jsonParser, (req, res) => {
   let originalUrl = req.body.url;
   let trailingID = shortid.generate();
-  let shortUrl = '/api/shorturl/' + trailingID;
+  let shortUrl = 'https://api/shorturl/' + trailingID;
 
   dns.lookup(urlparser.parse(originalUrl).hostname, (error, address)=>{
+    console.log(address);
     if(!address){
       res.json({ error: 'invalid url' });
     } else {
@@ -67,10 +68,6 @@ app.get('/api/shorturl/:trailing_id',  (req, res) => {
       return res.redirect(302, data[0].original_url)
     }
   })
-    // .then((foundURL)=>{
-    // let origUrl = foundURL[0];
-    // let shorty = foundURL[1]
-    // res.redirect(shorty.origUrl);}
   
 });
 
@@ -81,6 +78,3 @@ app.listen(port, () => {
 // TEST CASES TO PASS
 
 //  When you visit /api/shorturl/<short_url>, you will be redirected to the original URL.
-
-// If you pass an invalid URL that doesn't follow the valid http://www.example.com format, 
-//  the JSON response will contain { error: 'invalid url' }
