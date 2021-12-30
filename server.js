@@ -60,12 +60,12 @@ app.post('/api/shorturl/', jsonParser, (req, res) => {
 app.get('/api/shorturl/:trailing_id',  (req, res) => {
   let reqURL = req.params.original_url;
   let reqID = req.params.trailing_id;
-  Url.find({ short_url: req.params.short_url }, (err, data)=>{
+  Url.find({ short_url: req.params.trailing_id }, (err, data)=>{
     if(err) console.log(err);
     if(!data){
       res.json({ error: 'invalid url' });
     } else {
-      return res.redirect(302, data[0].original_url)
+      return res.redirect( data[0].original_url)
     }
   })
   
